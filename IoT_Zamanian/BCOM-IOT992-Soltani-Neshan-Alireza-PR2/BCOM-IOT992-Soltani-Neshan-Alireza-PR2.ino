@@ -1,0 +1,51 @@
+#include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <WiFiClient.h>
+
+const String ssid = "iPhone";
+const String password = "AL128re/*";
+int randNum;
+
+ESP8266WebServer server(80);
+
+int x;
+
+void handleRoot() {
+  randNum = random(1000);
+  String randStr = String(randNum);
+  server.send(200, "text/plain", randStr);
+}
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  Serial.print("ESP8266 MAC: ");
+  Serial.println(WiFi.macAddress());
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) { server.handleClient(); }
